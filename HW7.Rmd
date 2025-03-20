@@ -1,0 +1,332 @@
+---
+title: "Assignment 7"
+author: Mykola Chuprynskyy (8473595)
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: true
+    toc_depth: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,          # Show code in output for reproducibility
+  message = FALSE,      # Suppress messages from packages
+  warning = FALSE,      # Suppress warnings
+  fig.align = "center", # Center figures
+  fig.width = 7,        # Set default figure width
+  fig.height = 5,       # Set default figure height
+  comment = NA,         # Remove comment prefixes from output
+  fig.cap = "Figure"    # Add default caption for figures
+)
+```
+# Assignment 
+Write all your text and R code in an R markdown file and compile an html file whose ZIP
+file can be handed in on Blackboard.
+
+# 1. Multidimensional Scaling
+
+The file TouristAttractiveness.txt contains empirical data that refer to the attractiveness level of the following 29 Lower Silesian counties in Poland: 1. Boleslawiecki, 2.
+Jaworski, 3. Jeleniogorski, 4. Kamiennogorski, 5. Lubanski, 6. Lwowecki, 7. Zgorzelecki,
+8. Zlotoryjski, 9. Glogowski, 10. Gorowski, 11. Legnicki, 12. Lubinski, 13. Polkowicki, 14.
+Dzierzoniowski, 15. Klodzki, 16. Swidnicki, 17. Walbrzyski, 18. Zabkowicki, 19. Milicki,
+20. Olesnicki, 21. Olawski, 22. Strzelinski, 23. Sredzki, 24. Trzebnicki, 25. Wolowski, 26.
+Wroclawski, 27. Jelenia Gora, 28. Legnica, and 29. Wroclaw. The evaluation of tourist
+attractiveness of these 29 counties was performed using 16 metric variables (measured on
+a ratio scale):
+
+* x1 – beds in hotels per 1 km2 of a county area,
+* x2 – number of nights spent daily by resident tourists per 1000 inhabitants of a
+county,
+* x3 – number of nights spent daily by foreign tourists per 1000 inhabitants of a county,
+* x4 – gas pollution emission in tons per 1 km2 of a county area,
+* x5 – number of criminal offences and crimes against life and health per 1000 inhabitants of a county,
+* x6 – number of property crimes per 1000 inhabitants of a county,
+* x7 – number of historical buildings per 100 km2 of a county area,
+* x8, x9, and x10 – number of events as well as cultural and tourist ventures in a
+county,
+* x11 – number of natural monuments calculated per 1 km2 of a county area,
+* x12 – number of tourist economy entities per 1000 inhabitants of a county (natural
+and legal persons),
+* x13 – expenditure of municipalities and counties on tourism, culture and national
+heritage protection as well as physical culture per 1 inhabitant of a county,
+* x14 – viewers in cinemas per 1000 inhabitants of a county,
+* x15 – museum visitors per 1000 inhabitants of a county,
+* x16 – number of construction permits (hotels and accommodation buildings, commercial and service buildings, transport and communication buildings, civil and water engineering constructions) issued in a county in the years 2011-2012 per 1 km2 of a county area.
+
+Import the data file into R. Check whether variable names are included and whether the
+file contains other variables than the 16 metric variables mentioned above. Use the function
+dist() to create a distance matrix that includes Euclidean distances between the counties
+based on the 16 metric variables. Since the distance matrix is symmetric with all diagonal
+elements equal to zero, the output of the function dist() only contains the lower triangular
+entries. Use the function length() to determine the number of elements in the output.
+
+---
+
+## 1.) How many elements are in the output? This number should be equal to the total number of unique pairs of counties (the number of combinations).
+
+```{r}
+# Load the data
+tourism_data <- read.table("TouristAttractiveness.txt", header = TRUE)
+
+# Verify the data structure
+str(tourism_data)
+
+# Remove non-metric variables if present and retain only the 16 metric variables
+tourism_data_clean <- tourism_data[, 2:17]  # Assuming 1st column is the county name
+
+# Create a Euclidean distance matrix
+dist_matrix <- dist(tourism_data_clean, method = "euclidean")
+
+# 1. Number of elements in the distance matrix
+length(dist_matrix)
+
+```
+
+There are 406 `unique pairs`! We can also confirm this with the Unique pair formula n(n-1)/2. 29(29-1)/2 = 406.
+
+Use the functions min() and max() to determine the minimum and maximum distances between counties.
+
+## 2.) What are the minimum and maximum distances?
+```{r}
+# 2. Minimum and Maximum distances between counties
+min_dist <- min(dist_matrix)
+max_dist <- max(dist_matrix)
+
+min_dist
+max_dist
+
+```
+
+The `minimum distance` between counties is 59.55, while the `maximum distance` is 6364.79!
+
+## 3.) Are these distances geographic distances? Why?
+
+These distances are `not` geographic distances, and my explanation is as follows:
+
+  * The values that we calculate here are `Euclidian Distances` based on the values that all 16 of our metric variables have, and they explain the Tourist Attractiveness of each county rather than the physical distance between them. 
+  * Therefore two unrelated counties who have similar values for certain features(let's say two counties have a similar number of historical sites or hotel beds) may appear very close together in our `metric distance` analysis while they're extremely far apart in real life. (For example if this was about countries rather than counties, The Bahamas and Turkey could be used as an example)
+  * We could also have two geographically close counties have a high `Euclidian distance` in this analysis if their tourism related metrics differ a lot.
+  
+Therefore no, they are `Euclidian distances`.
+
+Now, execute
+```{r}
+# 4. Counties with the smallest distance
+which(as.matrix(dist_matrix) == min(dist_matrix), arr.ind = TRUE)
+
+```
+
+where D should be replaced by the name that you used for the distance matrix. The
+output gives the numbers of the county pairs for which the distance is the smallest.
+
+## 4.) Between which two counties is the distance the smallest? Give the names of the counties.
+
+Here, we do not even need to use any additional code as the output is already laid out for us. Counties `Woloski(25)` and `Olawski(21)` have the smallest distance between them. We know this because the which() function, [combined with min() and arr.ind=T] returns us the row and column indices where the `minimum distance` is located in the `distance matrix`. Here, another interesting thing to note is (while definitely not being asked here) is that the distance matrix is `symmetric`, so the distance from `Wolowski` to `Olawski` and the distance from `Olawski` to `Wolowski` is the same. This is one of the conditions required for `dissimilarities` to be considered `metric distances`.
+
+---
+
+In a similar fashion, the counties for which the distance is the largest, can be determined.
+
+## 5.) Between which two counties is the distance the largest? Give the names of the counties.
+```{r}
+# 5. Counties with the largest distance
+which(as.matrix(dist_matrix) == max(dist_matrix), arr.ind = TRUE)
+
+
+```
+
+Therefore since `rows 17` and `3` correspond to `Walbrzyski` and `Jeleniogorski` respectively, the two counties with the largest `Euclidian distance` are Walbrzyski and Jeleniogorski.
+
+---
+
+Next, perform classical multidimensional scaling (MDS) and determine the number of dimensions.
+
+## 6.) How many dimensions do you select based on classical MDS? Why?
+```{r}
+# We perform Classical Multidimensional Scaling (MDS)
+mds <- cmdscale(dist_matrix, eig = TRUE, k = 16)
+
+# The Eigenvalues
+mds$eig
+
+# To see how much of the total variance we explain with each dimension
+var_exp <- mds$eig / sum(mds$eig)
+
+# The cumulative varience we explain
+cum_var <- cumsum(var_exp)
+cum_var
+
+
+```
+
+Based on the output, I would select `three dimensions`(which explain 97.6% of the total variance) with that aknowlage any number of dimensions beyond 3 will definetelly explain more than 99% of the variance and do not contribute as much `individidually` to explaining more of the variance, and that targets our goal to keep `dimensionality` relatively low for `interpretability` purposes as well, I think three dimensions is the sweet spot.
+
+## 7.) Produce a two dimensional map in which the distances between the counties are visualized.
+
+Label the counties in this map from 1 to 29 using the code(I decided to include it in the code chunk below)
+where cmds should be replaced by the name that you used for the output of classical
+MDS.
+
+```{r}
+# The labeling code given to us in the instructions
+rownames(mds$points) <- 1:29  # Use the MDS object from question 6
+
+# The 2D Scatter Plot showing the (Euclidian) Distances between each county
+plot(mds$points[, 1:2], type = "n", xlab = "Dimension 1", ylab = "Dimension 2", 
+     main = "2D MDS Map of Counties")
+
+# The labels(I used pos = 4 to place the text slightly to the right so they overlap a bit less, although overlapping is still a problem)
+text(mds$points[, 1:2], labels = rownames(mds$points), pos = 4, cex = 0.65)
+
+
+```
+
+Next, perform Sammon mapping.
+
+## 8.) Use plot(1:4,stress,type=‘l’) to produce a scree-plot for the stress values obtained by varying the number of dimensions from 1 to 4, where stress is a vector containing the corresponding stress values (note that the symbol between quotation marks is a letter).
+```{r}
+library(MASS)
+
+# We define our "stress" vector
+stress <- numeric(4)
+
+# The Sammon Mapping
+for (k in 1:4) {
+  sammon <- sammon(dist_matrix, k = k)
+  stress[k] <- sammon$stress 
+}
+
+# The Scree Plot that is asked of us
+plot(1:4, stress, type = 'l', xlab = "Number of Dimensions", ylab = "Stress", 
+     main = "Scree-Plot of Stress Values- Sammon Mapping")
+
+```
+
+## 9.) How many dimensions do you select based on the scree-plot? Why?
+
+Before explaining how many dimensions I would choose, it's important to highlight a few key concepts:
+
+Sammon Mapping: This is a dimensionality reduction technique that emphasizes preserving small pairwise distances between data points, making it particularly useful for maintaining local structure within the data during the reduction process.
+Stress: This metric reflects the discrepancy between the pairwise dissimilarities in the original high-dimensional data and the reduced lower-dimensional representation. Lower stress values indicate a better preservation of the original distances, so we aim for as little stress as possible while reducing dimensionality.
+
+In this case, I would select two dimensions based on the scree plot. Although adding more dimensions continues to reduce stress, our goal is to find a balance between reducing stress and maintaining a low number of dimensions, since the primary aim of dimensionality reduction is simplicity. The scree plot shows a significant reduction in stress up to two dimensions, after which the rate of decrease becomes much smaller. This point, often referred to as the elbow point, suggests that beyond two dimensions, the improvement in stress reduction is minimal relative to the increase in complexity. Therefore, selecting two dimensions provides a good trade-off between maintaining data fidelity and reducing dimensionality.
+
+
+# 2. Correspondence analysis
+
+The file EcoActivity.txt contains a two-way contingency table that can be used to analyze economic activity of the Polish population in relation to gender and level of education
+in the second quarter of 2011. The rows of the table refer to different levels of education,
+that is:
+
+  * 1. tertiary (E1),
+  * 2. post-secondary (E2),
+  * 3. secondary (E3),
+  * 4. general secondary (E4),
+  * 5. basic vocational (E5),
+  * 6. lower secondary, primary and incomplete primary (E6).
+The columns refer to the levels:
+
+  * 1. full-time employed females (A1F),
+  * 2. part-time employed females (A2F),
+  * 3. unemployed females (A3F),
+  * 4. economically inactive females (A4F),
+  * 5. full-time employed males (A1M),
+  * 6. part-time employed males (A2M),
+  * 7. unemployed males (A3M),
+  * 8. economically inactive males (A4M).
+  
+Import the data into R and respond to the following items.
+
+## 1.) Give the rows 1 to 6 the labels E1 to E6, respectively. Give the columns 1 to 4 the labels A1F to A4F, and the columns 5 to 8 the labels A1M to A4M, respectively.
+```{r}
+# Importing our dataset
+eco_activity <- read.table("EcoActivity.txt", header = FALSE)
+
+# Now the labels as laid out by the instructions
+rownames(eco_activity) <- c("E1", "E2", "E3", "E4", "E5", "E6")
+colnames(eco_activity) <- c("A1F", "A2F", "A3F", "A4F", "A1M", "A2M", "A3M", "A4M")
+
+# Just making sure everything works
+eco_activity
+
+```
+
+## 2.) Give the proportion of full-time employed females with secondary level of education.
+```{r}
+# First we will find the num. of full-time employed females with secondary level of education, and then the total population so we can calculate a percentage
+full_time_secondary_females <- eco_activity["E3", "A1F"]
+total_pop <- sum(eco_activity)
+
+# Now we calculate the proportion
+prop_ftsm <- full_time_secondary_females / total_pop
+prop_ftsm
+
+```
+
+After observing an output we see that percentage of full-time employed females with a secondary level of education in this dataset is 4.79%
+
+## 3.) Give balloon, mosaic, association, and sieve plots of the correspondence matrix.
+```{r}
+# We need two libraries
+library(gplots)
+library(vcd) 
+
+# Balloon plot for the correspondence matrix
+balloonplot(t(as.table(as.matrix(eco_activity))), main = "Balloon Plot of Correspondence Matrix", 
+            xlab = "Columns", ylab = "Rows", label = TRUE, show.margins = FALSE)
+
+# The Mosaic Plot(of the Correspondence Matrix)
+
+# Won't run unless I convert the data into a table
+eco_activity_table <- as.table(as.matrix(eco_activity))
+mosaic(eco_activity_table, main = "Mosaic Plot of Correspondence Matrix", shade = TRUE, legend = TRUE)
+
+# Association Plot
+assocplot(as.matrix(eco_activity), main = "Association Plot of The Correspondence Matrix")
+
+# Sieve Plot
+sieve(as.matrix(eco_activity), main = "Sieve Plot of The Correspondence Matrix")
+
+```
+
+## 4.) Apply a correspondence analysis to the data. How large is the total inertia?
+```{r}
+# We load the Correspondence Analysis Package
+library(ca)
+
+# We perform it
+Correspondence_eco_activity <- ca(eco_activity)
+summary(Correspondence_eco_activity)
+
+```
+
+The `total inertia` in this case is 0.24495, which is 24.5%. In other words, our `Correspondence Analysis` explains 24.5% of the `possible maximum variance` in the data.
+
+## 5.) Set the desired minimum proportion of explained inertia to .85. How many underlying dimensions are sufficient? What is the proportion of inertia explained by this number of dimensions?
+```{r}
+# First we calculate the proportion of inertia explained by each dimension
+inertia_prop <-Correspondence_eco_activity$sv^2 / sum(Correspondence_eco_activity$sv^2)
+
+num_dim <- which(cumsum(inertia_prop) >= 0.85)[1]
+
+# We now find the cumulative proportion of inertia explained by this number of dimensions
+Cumulative_prop_exp <- cumsum(inertia_prop)[num_dim]
+
+num_dim 
+Cumulative_prop_exp
+
+```
+
+Therefore, in order to meet the `minimum proportion` of explained `inertia` requirement(0.85), we need `2 dimensions`, and these two dimensions `cumulatively` explain 97.87% of the total proportion of inertia. Since inertia(in Correspondence Analysis) is a measure of the variation(or association) between rows and columns and rows in a `contingency table`, the results indicates that we can explain the relationship between education level and economic activity based on gender using only a two dimensional space without losing out on a large percentage of the total association.
+
+## 6.) Give the symmetric map for the final solution.
+```{r}
+# The Symmetric Map for Two Dimensions
+
+plot(Correspondence_eco_activity, map = "symmetric", main = "Symmetric Map of Correspondence Analysis (2 Dimensions)")
+
+```
+
+This assignment was perfect for revising some material.
